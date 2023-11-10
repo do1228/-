@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성적 평균 계산기</title>
+    <script>
+        var studentCount = 2;
+
+        function addStudentInput() {
+            var container = document.getElementById('studentInputs');
+            var newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.className = 'grade';
+            newInput.placeholder = '학생 ' + studentCount + ' 성적';
+            container.appendChild(newInput);
+            studentCount++;
+        }
+
+        function calculateAverage() {
+            var grades = document.getElementsByClassName('grade');
+            var sum = 0;
+            var validGradesCount = 0;
+
+            for (var i = 0; i < grades.length; i++) {
+                var currentGrade = parseFloat(grades[i].value);
+                if (!isNaN(currentGrade)) {
+                    sum += currentGrade;
+                    validGradesCount++;
+                }
+            }
+
+            if (validGradesCount === 0) {
+                document.getElementById('result').style.color = 'red';
+                document.getElementById('result').innerHTML = '적어도 한 명 이상의 학생 성적을 입력하세요!';
+                setTimeout(function() {
+                    document.getElementById('result').style.color = 'black';
+                    document.getElementById('result').innerHTML = '';
+                }, 2000);
+                return;
+            }
+
+            var average = sum / validGradesCount;
+
+            // 내 번호를 입력할 수 있는 창
+            var myNumber = parseInt(document.getElementById('myNumber').value) || 0;
+
+            // 학생 수가 내 번호보다 적을 때
+            if (validGradesCount < myNumber) {
+                document.getElementById('result').style.color = 'red';
+                document.getElementById('result').innerHTML = '학생 수가 부족합니다!';
+                setTimeout(function() {
+                    document.getElementById('result').style.color = 'black';
+                    document.getElementById('result').innerHTML = '';
+                }, 1000);
+            } else {
+                document.getElementById('result').style.color = 'black';
+                document.getElementById('result').innerHTML = '성적 평균: ' + average.toFixed(2);
+
+                // 석차 계산
+                var sortedGrades = Array.from(grades).map(function (grade) {
+                    return parseFloat(grade.value) || 0;
+                }).sort(function (a, b) {
+                    return b - a;
+                });
+
+                var rank = sortedGrades.indexOf(parseFloat(grades[myNumber - 1].value)) + 1;
+                document.getElementById('result').innerHTML += '<br>석차: ' + rank;
+
+                // 과목 평균 계산
+                var subjectAverage = sum / validGradesCount;
+                document.getElementById('result').innerHTML += '<br>과목 평균: ' + subjectAverage.toFixed(2);
+
+                // 표준 편차 계산
+                var squaredDifferences = sortedGrades.map(function (grade) {
+                    return Math.pow(grade - subjectAverage, 2);
+                });
+                var variance = squaredDifferences.reduce(function (sum, value) {
+                    return sum + value;
+                }, 0) / squaredDifferences.length;
+                var standardDeviation = Math.sqrt(variance);
+                document.getElementById('result').innerHTML += '<br>표준 편차: ' + standardDeviation.toFixed(2);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>성적 평균 계산기</h1>
+
+    <div id="studentInputs">
+        <input type="text" class="grade" placeholder="학생 1 성적">
+    </div>
+    
+    <button onclick="addStudentInput()">학생 추가</button>
+
+    <!-- 내 번호를 입력할 수 있는 창 -->
+    <label for="myNumber">내 번호: </label>
+    <input type="text" id="myNumber" placeholder="내 번호">
+
+    <button onclick="calculateAverage()">계산하기</button>
+
+    <div id="result"></div>
+</body>
+</html>
